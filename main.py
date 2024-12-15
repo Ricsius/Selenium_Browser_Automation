@@ -1,4 +1,5 @@
 import os
+import time
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
@@ -13,6 +14,8 @@ PASSWORD = os.getenv("Tools_QA_Password")
 def get_chrome_driver():
     chrome_options = Options()
     chrome_options.add_argument("--disable-search-engine-choice-screen")
+    prefs = {"download.default_directory": os.getcwd()}
+    chrome_options.add_experimental_option("prefs", prefs)
     service = Service("chromedriver-win64/chromedriver.exe")
     driver = webdriver.Chrome(options=chrome_options, service=service)
 
@@ -47,12 +50,21 @@ def fill_form(driver):
     permanent_address_field.send_keys("John Street 100, New York, USA")
     driver.execute_script("arguments[0].click();", submit_button)
 
+def navigate_to_image_download(driver):
+    upload_download_element = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.ID, "item-7")))
+    upload_download_element.click()
+
+def download_image(driver):
+    download_button = driver.find_element(By.ID, "downloadButton")
+    driver.execute_script("arguments[0].click();", download_button)
+    time.sleep(3)
+
 driver = get_chrome_driver()
 
 driver.get(WEBSITE)
 login(driver)
 navigate_to_form(driver)
 fill_form(driver)
-
-input("Press Enter to close the browser")
+navigate_to_image_download(driver)
+download_image(driver)
 driver.quit()
